@@ -120,10 +120,5 @@ Future releases will include:
 * Visual alignment validation
 * Foldseek-based pairwise comparison interface
 
-## 📜 License
-
-MIT License
-
----
 
 > Developed by Luna Sung-eun Jang and Soo young Cha and C++
