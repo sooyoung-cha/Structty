@@ -1,6 +1,6 @@
-# PDB Terminal
+# Structty
 
-**PDB Terminal** is a lightweight, terminal-based protein structure visualizer designed for fast and interactive comparison of protein structures. It supports simultaneous visualization of two proteins, customizable chain selection, and even external transformation matrices (u, t) for alignment. It is built for extensibility and will support Foldseek integration in the near future.
+**Structty** is a lightweight, terminal-based protein structure visualizer designed for fast and interactive comparison of protein structures. It supports simultaneous visualization of two proteins, customizable chain selection, and even external transformation matrices (u, t) for alignment. It is built for extensibility and will support Foldseek integration in the near future.
 
 ## ✨ Features
 
@@ -23,16 +23,16 @@
 ### Build
 
 ```bash
-git clone https://github.com/Sooyoung-cha/PDBinTerminal.git
-cd PDBTerminal
+git clone https://github.com/Sooyoung-cha/Structty.git
+cd Structty
 mkdir build && cd build
 cmake ..
 make -j 10
 ```
 
 ```bash
-git clone https://github.com/Sooyoung-cha/PDBinTerminal.git
-cd PDBTerminal
+git clone https://github.com/Sooyoung-cha/Structty.git
+cd Structty
 mkdir build && cd build
 brew install ncurses
 cmake .. \
@@ -112,7 +112,7 @@ make
 
 ## 🔗 Integration with Foldseek
 
-PDB Terminal can accept external transformation matrices (`u`, `t`) output by **Foldseek** for protein alignment visualization.
+Structty can accept external transformation matrices (`u`, `t`) output by **Foldseek** for protein alignment visualization.
 
 Future releases will include:
 
