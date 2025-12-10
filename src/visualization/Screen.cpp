@@ -57,7 +57,7 @@ void Screen::set_utmatrix(const std::string& utmatrix, bool onlyU) {
         }
     } 
     std::ifstream file(utmatrix);
-    if (!file.is_open()) {
+    if (!file.is_open() && onlyU == 0) {
         std::cerr << "Failed to open utmatrix file\n";
         return;
     }
@@ -110,7 +110,6 @@ void Screen::set_utmatrix(const std::string& utmatrix, bool onlyU) {
 }
 
 void Screen::normalize_proteins(const std::string& utmatrix){
-    
     for (size_t i = 0; i < data.size(); i++) {
         auto* p = data[i];
         p->load_data(vectorpointer[i], yesUT);        
