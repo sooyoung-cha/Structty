@@ -218,85 +218,176 @@ void Protein::load_ss_info_pdb(const std::string& in_file,
 // cif file
 void Protein::count_seqres_cif(const std::string& file) {
     std::ifstream in(file);
-
     if (!in.is_open()) {
         std::cerr << "Error opening file: " << file << std::endl;
+        return;
     }
 
     std::string line;
+    
+    std::map<std::string, int> entity_length;
+
     bool in_loop = false;
-    bool in_poly_seq = false;
-    int entity_id_col = -1;
-    int num_col = -1;
+    bool in_poly_seq_loop = false;
+    int seq_entity_id_col = -1;
+    int seq_num_col = -1;
     int col_idx = 0;
+    
+    std::map<std::string, std::vector<char>> entity_chains;
+    
+    std::string current_entity_id_scalar;
+    bool have_current_entity_scalar = false;
+    
+    bool in_entity_poly_loop = false;
+    int ep_entity_id_col = -1;
+    int ep_strand_id_col = -1;
 
-    std::map<std::string, int> entity_length; // entity_id → length
-    std::map<std::string, char> entity_chain; // entity_id → chain letter
+    auto trim = [](std::string s) {
+        auto not_space = [](int ch) { return !std::isspace(ch); };
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), not_space));
+        s.erase(std::find_if(s.rbegin(), s.rend(), not_space).base(), s.end());
+        return s;
+    };
 
-    // 먼저 chainID를 찾기 위한 poly section도 읽어야 함
-    std::ifstream in2(file);
-    std::string line2;
-
-    // _entity_poly.pdbx_strand_id   entity → chain map
-    while (std::getline(in2, line2)) {
-        if (line2.find("_entity_poly.pdbx_strand_id") != std::string::npos) {
-            // 다음 줄에 값이 나오는 형태
-            std::getline(in2, line2);
-            std::istringstream ss(line2);
-            std::string entity_id, strand_id;
-            ss >> entity_id >> strand_id;
-
-            char chainID = strand_id[0];
-            entity_chain[entity_id] = chainID;
+    auto strip_quotes = [](std::string s) {
+        if (s.size() >= 2 &&
+            ((s.front() == '\'' && s.back() == '\'') ||
+             (s.front() == '"'  && s.back() == '"')))
+        {
+            return s.substr(1, s.size() - 2);
         }
-    }
-    in2.close();
+        return s;
+    };
 
-    // 이제 poly_seq loop 읽기
     while (std::getline(in, line)) {
         if (line == "loop_") {
             in_loop = true;
+            in_poly_seq_loop = false;
+            in_entity_poly_loop = false;
+            col_idx = 0;
             continue;
         }
 
-        if (in_loop && line.find("_entity_poly_seq.") != std::string::npos) {
-            if (line.find("_entity_poly_seq.entity_id") != std::string::npos)
-                entity_id_col = col_idx;
-            else if (line.find("_entity_poly_seq.num") != std::string::npos)
-                num_col = col_idx;
-
-            col_idx++;
+        if (in_loop && !line.empty() && line[0] == '#') {
+            in_loop = false;
+            in_poly_seq_loop = false;
+            in_entity_poly_loop = false;
             continue;
         }
+        
+        if (in_loop && !line.empty() && line[0] == '_') {
+            if (line.find("_entity_poly_seq.") == 0) {
+                in_poly_seq_loop = true;
+                in_entity_poly_loop = false;
 
-        // loop 끝
-        if (in_loop && line.size() > 0 && line[0] == '#') {
-            break;
+                if (line.find("_entity_poly_seq.entity_id") == 0)
+                    seq_entity_id_col = col_idx;
+                else if (line.find("_entity_poly_seq.num") == 0)
+                    seq_num_col = col_idx;
+
+                ++col_idx;
+                continue;
+            }
+
+            if (line.find("_entity_poly.") == 0) {
+                in_entity_poly_loop = true;
+                in_poly_seq_loop = false;
+
+                if (line.find("_entity_poly.entity_id") == 0)
+                    ep_entity_id_col = col_idx;
+                else if (line.find("_entity_poly.pdbx_strand_id") == 0)
+                    ep_strand_id_col = col_idx;
+
+                ++col_idx;
+                continue;
+            }
+            
+            ++col_idx;
+            continue;
         }
-
-        // 실제 데이터 줄
-        if (in_loop && entity_id_col != -1 && num_col != -1) {
+        
+        if (in_loop) {
             std::istringstream ss(line);
             std::string token;
             std::vector<std::string> tokens;
             while (ss >> token) tokens.push_back(token);
+            
+            if (in_poly_seq_loop &&
+                seq_entity_id_col >= 0 && seq_num_col >= 0 &&
+                tokens.size() > static_cast<size_t>(std::max(seq_entity_id_col, seq_num_col)))
+            {
+                std::string entity_id = tokens[seq_entity_id_col];
+                int num = std::stoi(tokens[seq_num_col]);
 
-            if (tokens.size() > std::max(entity_id_col, num_col)) {
-                std::string entity_id = tokens[entity_id_col];
-                int num = std::stoi(tokens[num_col]);
-
-                if (entity_length[entity_id] < num)
-                    entity_length[entity_id] = num; // max num = length
+                auto &len = entity_length[entity_id];
+                if (len < num) len = num;
             }
+            
+            if (in_entity_poly_loop &&
+                ep_entity_id_col >= 0 && ep_strand_id_col >= 0 &&
+                tokens.size() > static_cast<size_t>(std::max(ep_entity_id_col, ep_strand_id_col)))
+            {
+                std::string entity_id = tokens[ep_entity_id_col];
+                std::string strand_ids = strip_quotes(tokens[ep_strand_id_col]);
+                
+                std::stringstream ss2(strand_ids);
+                std::string s;
+                while (std::getline(ss2, s, ',')) {
+                    s = trim(s);
+                    if (s == "." || s == "?" || s.empty())
+                        continue;
+                    entity_chains[entity_id].push_back(s[0]);
+                }
+            }
+
+            continue;
+        }
+        
+        if (!line.empty() && line[0] == '_') {
+            // _entity_poly.entity_id      1
+            if (line.find("_entity_poly.entity_id") == 0) {
+                std::string val = trim(line.substr(std::string("_entity_poly.entity_id").size()));
+                val = strip_quotes(val);
+                if (!val.empty()) {
+                    current_entity_id_scalar = val;
+                    have_current_entity_scalar = true;
+                }
+                continue;
+            }
+            
+            if (line.find("_entity_poly.pdbx_strand_id") == 0) {
+                std::string val = trim(line.substr(std::string("_entity_poly.pdbx_strand_id").size()));
+                val = strip_quotes(val);
+
+                if (have_current_entity_scalar && !val.empty()) {
+                    std::stringstream ss2(val);
+                    std::string s;
+                    while (std::getline(ss2, s, ',')) {
+                        s = trim(s);
+                        if (s == "." || s == "?" || s.empty())
+                            continue;
+                        entity_chains[current_entity_id_scalar].push_back(s[0]);
+                    }
+                }
+                continue;
+            }
+        }
+        
+        if (!line.empty() && line[0] == '#') {
+            have_current_entity_scalar = false;
+            current_entity_id_scalar.clear();
         }
     }
 
     in.close();
 
-    // entity → chain 매핑해 residue count 저장
-    for (auto& [entity, length] : entity_length) {
-        if (entity_chain.count(entity)) {
-            char chainID = entity_chain[entity];
+    chain_res_count.clear();
+    for (auto &[entity, length] : entity_length) {
+        auto it = entity_chains.find(entity);
+        if (it == entity_chains.end())
+            continue;
+
+        for (char chainID : it->second) {
             chain_res_count[chainID] = length;
         }
     }

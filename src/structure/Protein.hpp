@@ -8,6 +8,7 @@
 #include <sstream>
 #include <cmath>
 #include <limits>
+#include <algorithm>
 #include "Atom.hpp"
 #include "StructureMaker.hpp"
 #include "SSPredictor.hpp"

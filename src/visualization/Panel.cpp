@@ -23,6 +23,15 @@ std::string Panel::get_panel_info() const {
         oss << file_name << "\n\t";
         int count = 0;
         for (const auto& [chainID, length] : chain_info) {
+            if (panel_residue_info.find(file_name) == panel_residue_info.end()) {
+                std::cerr << "[Error] file_name not found: " << file_name << "\n";
+            }
+
+            if (panel_residue_info.at(file_name).find(chainID) == panel_residue_info.at(file_name).end()) {
+                std::cerr << "[Error] chainID not found: " 
+                        << chainID 
+                        << " in file " << file_name << "\n";
+            }
             oss << chainID << ": " << panel_residue_info.at(file_name).at(chainID) << " (" << length << ")\t";
             count++;
             if (count % 3 == 0)
