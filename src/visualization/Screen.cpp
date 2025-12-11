@@ -4,13 +4,14 @@ const float FOV = 90.0;
 const float PI = 3.14159265359f;
 const float MAX_STRUCT_NUM = 6;
 
-Screen::Screen(const int& width, const int& height, const bool& show_structure, const std::string& mode) {
+Screen::Screen(const int& width, const int& height, const bool& show_structure, const std::string& mode, const std::string& depthcharacter) {
     screen_width = width;
     screen_height = height;
     screen_show_structure = show_structure;
     screen_mode = mode;
+    screen_depthcharacter = depthcharacter;
     aspect_ratio = (float)screen_width / screen_height;
-    zoom_level = std::vector<float>(MAX_STRUCT_NUM, 3); 
+    zoom_level = std::vector<float>(MAX_STRUCT_NUM, 3);
     
     camera = new Camera(get_home_dir() + "/Pictures/StrucTTY_screenshot/", width, height, mode);
     panel = new Panel(width);
@@ -139,13 +140,13 @@ char Screen::get_pixel_char_from_depth(float z, float min_z, float max_z) {
     z -= focal_offset;
     float zn = (z - min_z) / (max_z - min_z);
 
-    if (zn < 0.08f) return '#';
-    else if (zn < 0.18f) return '@';
-    else if (zn < 0.32f) return '%';
-    else if (zn < 0.50f) return '*';
-    else if (zn < 0.70f) return '^';
-    else if (zn < 0.85f) return '-';
-    else return '.';
+    if (zn < 0.08f) return screen_depthcharacter[0];
+    else if (zn < 0.18f) return screen_depthcharacter[1];
+    else if (zn < 0.32f) return screen_depthcharacter[2];
+    else if (zn < 0.50f) return screen_depthcharacter[3];
+    else if (zn < 0.70f) return screen_depthcharacter[4];
+    else if (zn < 0.85f) return screen_depthcharacter[5];
+    else return screen_depthcharacter[6];
 }
 
 void Screen::draw_line(std::vector<RenderPoint>& points,

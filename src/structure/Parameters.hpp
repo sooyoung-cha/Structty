@@ -20,7 +20,7 @@ class Parameters{
         vector<string> chains;
         string utmatrix = "";
         string mode = "default";
-
+        string depthcharacter = "#@%*^-.";
     public:
         Parameters(int argc, char* argv[]);
 
@@ -58,6 +58,9 @@ class Parameters{
         }
         string get_mode(){
             return mode;
+        }
+        string get_depthcharacter(){
+            return depthcharacter;
         }
         bool get_show_structure(){
             return show_structure;

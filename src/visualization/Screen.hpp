@@ -19,7 +19,7 @@ inline std::string get_home_dir() {
 
 class Screen {
 public:
-    Screen(const int& width, const int& height, const bool& show_structure, const std::string& mode);
+    Screen(const int& width, const int& height, const bool& show_structure, const std::string& mode, const std::string& depthcharacter);
     ~Screen();
     bool handle_input();
     char get_pixel_char_from_depth(float z, float min_z, float max_z);
@@ -45,6 +45,7 @@ private:
     bool screen_show_structure;
     bool yesUT = false;
     std::string screen_mode;
+    std::string screen_depthcharacter;
     float aspect_ratio;
     std::vector<RenderPoint> screenPixels;   
     std::vector<Protein*> data;  
