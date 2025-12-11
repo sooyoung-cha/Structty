@@ -9,6 +9,11 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+
+#include <gemmi/mmread.hpp>
+#include <gemmi/model.hpp>
+#include <gemmi/metadata.hpp>
+
 #include "Atom.hpp"
 #include "StructureMaker.hpp"
 #include "SSPredictor.hpp"
@@ -71,26 +76,15 @@ public:
     float cx, cy, cz, scale;
 
 private:
-    void count_seqres_pdb(const std::string& file);
-    bool is_ss_in_pdb(const std::string& in_file);
-    void load_ss_info_pdb(const std::string& in_file, 
-                          const std::string& target_chains,
-                          std::vector<std::tuple<char, int, char, int, char>>& ss_info);
-    void load_init_atoms_pdb(const std::string& in_file, 
+    void count_seqres(const std::string& file);
+    bool is_ss_in_file(const std::string& in_file);
+    void load_ss_info(const std::string& in_file, 
+                      const std::string& target_chains,
+                      std::vector<std::tuple<char, int, char, int, char>>& ss_info);
+    void load_init_atoms(const std::string& in_file, 
                              const std::string& target_chains,
                              const std::vector<std::tuple<char, int, char, int, char>>& ss_info, float * vectorpointers, bool yesUT);
-    void load_init_atoms_pdb(const std::string& in_file, 
-                             const std::string& target_chains, float * vectorpointers, bool yesUT);
-    
-    void count_seqres_cif(const std::string& file);
-    bool is_ss_in_cif(const std::string& in_file);
-    void load_ss_info_cif(const std::string& in_file, 
-                          const std::string& target_chains,
-                          std::vector<std::tuple<char, int, char, int, char>>& ss_info);
-    void load_init_atoms_cif(const std::string& in_file, 
-                             const std::string& target_chains,
-                             const std::vector<std::tuple<char, int, char, int, char>>& ss_info, float * vectorpointers, bool yesUT);
-    void load_init_atoms_cif(const std::string& in_file, 
+    void load_init_atoms(const std::string& in_file, 
                              const std::string& target_chains, float * vectorpointers, bool yesUT);
     
     void pred_ss_info(std::map<char, std::vector<Atom>>& init_atoms);

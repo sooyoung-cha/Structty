@@ -60,7 +60,7 @@ std::vector<char> SSPredictor::label_from_scores(const std::vector<int>& h_score
                                                  const std::vector<int>& e_score)
 {
     const size_t n = h_score.size();
-    std::vector<char> lab(n, 'x'); // 기본값
+    std::vector<char> lab(n, 'x'); // default
     for (size_t i = 0; i < n; ++i) {
         int h = h_score[i], e = e_score[i];
         if (h >= vote_threshold && h > e) lab[i] = 'H';

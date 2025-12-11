@@ -1,10 +1,11 @@
-file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/lodepng/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/simd/*.cpp"
+# -------- sources --------
+set(LIB_SOURCES       
+    ${CMAKE_CURRENT_SOURCE_DIR}/lodepng/lodepng.cpp  
 )
-file(GLOB_RECURSE LIB_HEADERS CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/lodepng/*.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/simd/*.hpp"
+
+set(LIB_HEADERS
+    ${CMAKE_CURRENT_SOURCE_DIR}/simd/simd.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/lodepng/lodepng.h
 )
 
 add_library(structty_utils STATIC
@@ -14,14 +15,16 @@ add_library(structty_utils STATIC
 
 set_target_properties(structty_utils PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+# include paths
 target_include_directories(structty_utils
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/lodepng
         ${CMAKE_CURRENT_SOURCE_DIR}/simd
+        ${CMAKE_CURRENT_SOURCE_DIR}/lodepng
+        ${CMAKE_CURRENT_SOURCE_DIR}/gemmi/include
 )
 
-if (MSVC)
-    target_compile_options(structty_utils PRIVATE /W4)
-else()
-    target_compile_options(structty_utils PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+# external deps
+target_link_libraries(structty_utils
+    PUBLIC
+        gemmi::gemmi_cpp
+)

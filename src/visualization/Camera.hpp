@@ -4,7 +4,7 @@
 #include "Palette.hpp"
 #include "Camera.hpp"
 #include "RenderPoint.hpp"
-#include "lodepng.hpp"
+#include "lodepng.h"
 #include <ctime>
 #include <thread>
 #include <chrono>  
