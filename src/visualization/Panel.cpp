@@ -9,7 +9,7 @@ void Panel::add_panel_info(const std::string& file_name, const std::map<char, in
 
 std::string Panel::get_panel_info() const {
     std::ostringstream oss;
-    oss << "\n";
+    // oss << "\n";
     oss << "*" << std::string(panel_width - 2, '=') << "*\n";
 
     oss << "\tW A S D : ^ < v >\t";

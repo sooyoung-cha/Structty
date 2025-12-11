@@ -393,8 +393,42 @@ void Screen::draw_screen() {
     clear_screen();
     project();
     print_screen();
-    
-    printw(panel->get_panel_info().c_str());
+
+    std::string panel_str = panel->get_panel_info();
+
+    int rows, cols;
+    getmaxyx(stdscr, rows, cols);
+
+    int panel_lines = 0;
+    for (char c : panel_str) {
+        if (c == '\n') panel_lines++;
+    }
+    if (!panel_str.empty() && panel_str.back() != '\n') {
+        panel_lines++;
+    }
+
+    int start_row = rows - panel_lines;
+    if (start_row < 0) start_row = 0;
+
+    std::stringstream ss(panel_str);
+    std::string line;
+    int cur_row = start_row;
+
+    while (std::getline(ss, line)) {
+        if (cur_row >= rows) break;
+
+        move(cur_row, 0);
+        clrtoeol();
+
+        if ((int)line.size() > cols) {
+            line = line.substr(0, cols);
+        }
+
+        printw("%s", line.c_str());
+        ++cur_row;
+    }
+
+    refresh();
 }
 
 void Screen::clear_screen() {
