@@ -1,24 +1,16 @@
 #include "Parameters.hpp"
+#include <cmath>
 
-bool Parameters::is_valid_number(const std::string& str, int min, int max) {
-    try {
-        // Is input number
-        for (char c : str) {
-            if (!std::isdigit(c)) return false;
-        }
-
-        // string to integer
-        int value = std::stoi(str);
-
-        // check range
-        if (value < min || value > max) {
-            return false;
-        }
-
-        return true;
-    } catch (const std::exception&) {
-        return false;
-    }
+bool is_nonnegative_number(const char* s) {
+    if (s == nullptr || *s == '\0') return false;
+    char* end = nullptr;
+    errno = 0;
+    double val = std::strtod(s, &end);
+    if (end == s || *end != '\0') return false;
+    if (errno == ERANGE) return false;
+    if (val <= 0.0) return false;
+    if (std::isnan(val)) return false;
+    return true;
 }
 
 Parameters::Parameters(int argc, char* argv[]) {
@@ -73,11 +65,11 @@ Parameters::Parameters(int argc, char* argv[]) {
             }
             else if (!strcmp(argv[i], "-w") || !strcmp(argv[i], "--width")) {
                 if (i + 1 < argc) {
-                    if (is_valid_number(argv[i + 1], 1, 5)) {
+                    if (is_nonnegative_number(argv[i + 1])) {
                         width = std::stoi(argv[i + 1]);
                         ++i; 
                     } else {
-                        throw std::runtime_error("Error: Parameter must be an integer between 1 and 5.");
+                        throw std::runtime_error("Error: Parameter must be above 0");
                     }
                 } else {
                     throw std::runtime_error("Error: Missing value for -w / --width.");
@@ -85,11 +77,11 @@ Parameters::Parameters(int argc, char* argv[]) {
             }
             else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--height")) {
                 if (i + 1 < argc) {
-                    if (is_valid_number(argv[i + 1], 1, 5)) {
+                    if (is_nonnegative_number(argv[i + 1])) {
                         height = std::stoi(argv[i + 1]);
                         ++i; 
                     } else {
-                        throw std::runtime_error("Error: Parameter must be an integer between 1 and 5.");
+                        throw std::runtime_error("Error: Parameter must be above 0.");
                     }
                 } else {
                     throw std::runtime_error("Error: Missing value for -h / --height.");
