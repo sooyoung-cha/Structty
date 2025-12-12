@@ -21,5 +21,5 @@ target_include_directories(structty_core
 
 target_link_libraries(structty_core
     PUBLIC
-        structty_utils   # gemmi + lodepng 자동 포함
+        structty_utils   # gemmi + lodepng
 )

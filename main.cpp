@@ -26,9 +26,9 @@ int main(int argc, char* argv[]) {
     }
     screen.normalize_proteins(params.get_utmatrix());
 
-    initscr(); // ncurses 초기화
-    cbreak();  // 특수 키 입력을 받도록 설정
-    noecho();  // 입력한 문자를 화면에 표시하지 않음
+    initscr();
+    cbreak();
+    noecho();
     
     bool run = true;
     while(run) {
@@ -37,6 +37,6 @@ int main(int argc, char* argv[]) {
         usleep(100);
     }
 
-    endwin(); // ncurses 종료
+    endwin();
     return 0;
 }
