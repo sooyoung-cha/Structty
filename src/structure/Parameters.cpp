@@ -40,7 +40,7 @@ Parameters::Parameters(int argc, char* argv[]) {
             } else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--depth")) {
                 if (i + 1 < argc) {
                     std::string val(argv[i + 1]);
-                    std::transform(val.begin(), val.end(), val.begin(), ::tolower); // to lowercase
+                    // std::transform(val.begin(), val.end(), val.begin(), ::tolower); // to lowercase
                     if (val != "") {
                         depthcharacter = val;
                         i++;
