@@ -5,7 +5,7 @@ project(StrucTTY LANGUAGES C CXX)
 include(FetchContent)
 
 # ----------------------------------------------------------
-# External libraries: gemmi + lodepng → cloned under lib/
+# External libraries: gemmi + lodepng 
 # ----------------------------------------------------------
 
 # gemmi

@@ -355,17 +355,54 @@ void Protein::do_rotation(float * rotate_mat) {
     float avgy = 0;
     float avgz = 0;
     int num = 0;
+    // for (auto& [chainID, chain_atoms] : screen_atoms) {
+    //     for (Atom& atom : chain_atoms) {
+    //         avgx += atom.x;
+    //         avgy += atom.y;
+    //         avgz += atom.z;
+    //         num += 1;   
+    //     }
+    // }
+    // avgx /= num;
+    // avgy /= num;
+    // avgz /= num;
+
+    float minx,maxx,miny,maxy,minz,maxz;
     for (auto& [chainID, chain_atoms] : screen_atoms) {
         for (Atom& atom : chain_atoms) {
-            avgx += atom.x;
-            avgy += atom.y;
-            avgz += atom.z;
-            num += 1;   
+            if (num == 0) {
+                minx = atom.x;
+                maxx = atom.x;
+                miny = atom.y;
+                maxy = atom.y;
+                minz = atom.z;
+                maxz = atom.z;
+            } else {
+                if (atom.x <minx) {
+                    minx = atom.x;
+                }
+                if (atom.x > maxx) {
+                    maxx = atom.x;
+                }
+                if (atom.y <miny) {
+                    miny = atom.y;
+                }
+                if (atom.y > maxy) {
+                    maxy = atom.y;
+                }
+                if (atom.z <minz) {
+                    minz = atom.z;
+                }
+                if (atom.z > maxz) {
+                    maxz = atom.z;
+                }
+            }
+            num++;
         }
     }
-    avgx /= num;
-    avgy /= num;
-    avgz /= num;
+    avgx = (minx + maxx) /2;
+    avgy = (miny + maxy) /2;
+    avgz = (minz + maxz) /2;
     for (auto& [chainID, chain_atoms] : screen_atoms) {
         for (Atom& atom : chain_atoms) {
             float x = atom.x;
