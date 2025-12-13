@@ -90,7 +90,7 @@ void StructureMaker::compute_helix_axis(const std::vector<Atom>& helix, float (&
 
 void StructureMaker::calculate_ss_points(std::map<char, std::vector<Atom>>& init_atoms,
                                          std::map<char, std::vector<Atom>>& ss_atoms) {
-    std::cout << "  apply structure\n";
+    // std::cout << "  apply structure\n";
     ss_atoms.clear();
 
     for (auto& [chainID, atoms] : init_atoms) {

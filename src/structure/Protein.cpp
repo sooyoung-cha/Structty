@@ -97,7 +97,7 @@ void Protein::set_bounding_box() {
 }         
 
 void Protein::count_seqres(const std::string& file) {
-    std::cout << "  count SEQRES\n";
+    // std::cout << "  count SEQRES\n";
     chain_res_count.clear();
 
     try {
@@ -162,7 +162,7 @@ void Protein::load_init_atoms(const std::string& in_file,
 
 void Protein::load_init_atoms(const std::string& in_file, 
                               const std::string& target_chains, float * vectorpointers, bool yesUT) {
-    std::cout << "  load atoms\n";
+    // std::cout << "  load atoms\n";
     init_atoms.clear();
 
     gemmi::Structure st = read_structure(in_file);
@@ -191,7 +191,7 @@ void Protein::load_ss_info(const std::string& in_file,
                                const std::string& target_chains,
                                std::vector<std::tuple<char,int,char,int,char>>& ss_info)
 {
-    std::cout << "  load SS info\n";
+    // std::cout << "  load SS info\n";
     ss_info.clear();
 
     gemmi::Structure st = read_structure(in_file);
