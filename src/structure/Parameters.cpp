@@ -13,8 +13,24 @@ bool is_nonnegative_number(const char* s) {
     return true;
 }
 
+void print_help(){
+    std::cout<<"-m, --mode:\n\t1.default(green)\n\t2.chain\n\t3.rainbow"<<std::endl;
+    std::cout<<"-d, --depth:\n\t1.default(#@%*^-.)\n\t2.7-character user input e.g. -d \"a134((%\""<<std::endl;
+    std::cout<<"-c, --chains:\n\tshow only the selected chains"<<std::endl;
+    std::cout<<"-w, --width\n\t1.default(3)\n\t2. User input above 0, below 2000"<<std::endl;
+    std::cout<<"-h, --height\n\t1.default(3)\n\t2. User input above 0, below 2000"<<std::endl;
+    std::cout<<"-s, --structure:\n\tshow secondary structure(alpha helix, beta sheet)"<<std::endl;
+    std::cout<<"-p, --predict:\n\tshow secondary structure with prediction if it is not described in the input file"<<std::endl;
+    std::cout<<"-ut, --utmatrix:\n\trotate and translate, see example/utfile"<<std::endl;
+}
 Parameters::Parameters(int argc, char* argv[]) {
     arg_okay = true;
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--help")) {
+            print_help();
+            std::exit(0);
+        }
+    }
     
     if (argc <= 1) {
         std::cerr << "Need input file dir" << std::endl;
@@ -97,7 +113,7 @@ Parameters::Parameters(int argc, char* argv[]) {
                 if (i + 1 < argc) {
                     utmatrix = argv[++i];
                 } else {
-                    throw std::runtime_error("Error: Missing value for -u / --umatrix.");
+                    throw std::runtime_error("Error: Missing value for -ut / --utmatrix.");
                 }
             } else if (fs::exists(argv[i]) && fs::is_regular_file(argv[i]) && in_file.size() < 6){
                 in_file.push_back(argv[i]);
@@ -105,7 +121,7 @@ Parameters::Parameters(int argc, char* argv[]) {
             else {
                 throw std::runtime_error("Error: Unknown parameter: " + std::string(argv[i]));
             }
-        }
+        }       
         catch (const std::exception& e) {
             std::cerr << "Wrong input parameters: " << e.what() << std::endl;
             std::cerr << "Error at argument: " << argv[i] << std::endl;
@@ -113,7 +129,6 @@ Parameters::Parameters(int argc, char* argv[]) {
             return;
         }
     }
-
     while(in_file.size() != chains.size()){
         chains.push_back("-");
     }
