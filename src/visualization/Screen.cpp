@@ -368,31 +368,13 @@ void Screen::project(std::vector<RenderPoint>& projectPixels, const int proj_wid
         }
     }
 }
-
-void Screen::print_screen() {
-    clear();  // ncurses screen initialization
-
-    for (int i = 0; i < screen_height; ++i) {
-        for (int j = 0; j < screen_width; ++j) {
-            int idx = i * screen_width + j;
-            const RenderPoint& px = screenPixels[idx];
-
-            if (px.color_id > 0) {
-                attron(COLOR_PAIR(px.color_id));
-                mvaddch(i, j, px.pixel);
-                attroff(COLOR_PAIR(px.color_id));
-            } else {
-                mvaddch(i, j, px.pixel);
-            }
-        }
-    }
-    refresh();  // screen output
+void Screen::clear_screen() {
+    screenPixels.assign(screen_width * screen_height, RenderPoint());
 }
 
 void Screen::draw_screen() {
     clear_screen();
     project();
-    print_screen();
 
     std::string panel_str = panel->get_panel_info();
 
@@ -406,6 +388,14 @@ void Screen::draw_screen() {
     if (!panel_str.empty() && panel_str.back() != '\n') {
         panel_lines++;
     }
+    if (panel_lines > rows) panel_lines = rows;
+    int margin = 3;
+    int offset = panel_lines + margin;
+    if (offset > rows) offset = rows;
+
+    clear();
+
+    print_screen(offset);
 
     int start_row = rows - panel_lines;
     if (start_row < 0) start_row = 0;
@@ -423,7 +413,6 @@ void Screen::draw_screen() {
         if ((int)line.size() > cols) {
             line = line.substr(0, cols);
         }
-
         printw("%s", line.c_str());
         ++cur_row;
     }
@@ -431,10 +420,38 @@ void Screen::draw_screen() {
     refresh();
 }
 
-void Screen::clear_screen() {
-    clear(); 
-    screenPixels.assign(screen_width * screen_height, RenderPoint());
+
+void Screen::print_screen(int panel_lines) {
+    int rows, cols;
+    getmaxyx(stdscr, rows, cols);
+
+    for (int i = 0; i < screen_height; ++i) {
+        int row = i - panel_lines;      // ← 여기서 위로 panel_lines만큼 올림
+        if (row < 0) continue;          // 음수 row는 그리지 않음
+        if (row >= rows) break;         // 터미널 바깥이면 종료
+
+        int max_width = std::min(screen_width, cols);
+
+        for (int j = 0; j < max_width; ++j) {
+            int idx = i * screen_width + j;
+            const RenderPoint& px = screenPixels[idx];
+
+            if (px.color_id > 0) {
+                attron(COLOR_PAIR(px.color_id));
+                mvaddch(row, j, px.pixel);
+                attroff(COLOR_PAIR(px.color_id));
+            } else {
+                mvaddch(row, j, px.pixel);
+            }
+        }
+    }
+    // refresh()는 draw_screen에서 한 번만 호출
 }
+
+// void Screen::clear_screen() {
+//     clear(); 
+//     screenPixels.assign(screen_width * screen_height, RenderPoint());
+// }
 
 void Screen::set_zoom_level(float zoom){
     if (structNum == -1) {

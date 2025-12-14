@@ -61,5 +61,5 @@ private:
     void project();
     void project(std::vector<RenderPoint>& screenshotPixels, const int proj_width, const int proj_height);
     void clear_screen();
-    void print_screen();
+    void print_screen(int panel_lines);
 };
