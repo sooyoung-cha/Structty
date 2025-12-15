@@ -2,7 +2,7 @@
 
 const float FOV = 90.0;
 const float PI = 3.14159265359f;
-const float MAX_STRUCT_NUM = 6;
+const int MAX_STRUCT_NUM = 6;
 
 Screen::Screen(const int& width, const int& height, const bool& show_structure, const std::string& mode, const std::string& depthcharacter) {
     screen_width = width;
@@ -11,7 +11,6 @@ Screen::Screen(const int& width, const int& height, const bool& show_structure, 
     screen_mode = mode;
     screen_depthcharacter = depthcharacter;
     aspect_ratio = (float)screen_width / screen_height;
-    zoom_level = std::vector<float>(MAX_STRUCT_NUM, 3);
     
     camera = new Camera(get_home_dir() + "/Pictures/StrucTTY_screenshot/", width, height, mode);
     panel = new Panel(width);
@@ -30,6 +29,8 @@ Screen::~Screen() {
 void Screen::set_protein(const std::string& in_file, const std::string& target_chains, const bool& show_structure) {
     Protein* protein = new Protein(in_file, target_chains, show_structure);
     data.push_back(protein);
+    pan_x.push_back(0.0f);
+    pan_y.push_back(0.0f);
 }
 
 void Screen::set_tmatrix() {
@@ -242,7 +243,7 @@ void Screen::assign_colors_to_points(std::vector<RenderPoint>& points, int prote
 void Screen::project() {
     std::vector<float> fovRads;
     for (size_t i = 0; i < data.size(); i++) {
-        fovRads.push_back(1.0 / tan((FOV / zoom_level[i]) * 0.5 / 180.0 * PI));
+        fovRads.push_back(1.0f / tan((FOV * 0.5f) / 180.0f * PI));
     }
 
     std::vector<RenderPoint> finalPoints;
@@ -267,8 +268,8 @@ void Screen::project() {
                 float z = position[2] + focal_offset;
                 char structure = chain_atoms[i].get_structure();
 
-                float projectedX = (x / z) * fovRads[ii];
-                float projectedY = (y / z) * fovRads[ii];
+                float projectedX = (x / z) * fovRads[ii] + pan_x[ii];
+                float projectedY = (y / z) * fovRads[ii] + pan_y[ii];
                 int screenX = (int)((projectedX + 1.0) * 0.5 * screen_width);
                 int screenY = (int)((1.0 - projectedY) * 0.5 * screen_height);
 
@@ -307,7 +308,7 @@ void Screen::project() {
 void Screen::project(std::vector<RenderPoint>& projectPixels, const int proj_width, const int proj_height) {
     std::vector<float> fovRads;
     for (size_t i = 0; i < data.size(); i++) {
-        fovRads.push_back(1.0 / tan((FOV / (zoom_level[i] * camera_mul)) * 0.5 / 180.0 * PI));
+        fovRads.push_back(1.0f / tan((FOV * 0.5f) / 180.0f * PI));
     }
 
     std::vector<RenderPoint> finalPoints;
@@ -332,8 +333,8 @@ void Screen::project(std::vector<RenderPoint>& projectPixels, const int proj_wid
                 float z = position[2] + focal_offset;
                 char structure = chain_atoms[i].get_structure();
 
-                float projectedX = (x / z) * fovRads[ii];
-                float projectedY = (y / z) * fovRads[ii];
+                float projectedX = (x / z) * fovRads[ii] + pan_x[ii];
+                float projectedY = (y / z) * fovRads[ii] + pan_y[ii];
                 int screenX = (int)((projectedX + 1.0) * 0.5 * proj_width);
                 int screenY = (int)((1.0 - projectedY) * 0.5 * proj_height);
 
@@ -454,21 +455,36 @@ void Screen::print_screen(int panel_lines) {
 // }
 
 void Screen::set_zoom_level(float zoom){
-    if (structNum == -1) {
-        for (size_t i = 0; i < MAX_STRUCT_NUM; i++) {
-            if ((zoom_level[i] + zoom > 1)&&(zoom_level[i] + zoom < 50)){
-                zoom_level[i] += zoom;
-            }
-        }
+    float old = focal_offset;
+    float neu = std::max(0.2f, old + zoom);
+    if (neu == old) return;
+
+    float k = old / neu;
+
+    if (structNum != -1) {
+        pan_x[structNum] *= k;
+        pan_y[structNum] *= k;
     } else {
-        if ((zoom_level[structNum] + zoom > 1)&&(zoom_level[structNum] + zoom < 50)){
-            zoom_level[structNum] += zoom;
+        for (int i = 0; i < (int)data.size(); ++i) {
+            pan_x[i] *= k;
+            pan_y[i] *= k;
         }
     }
+    focal_offset = neu;
 }
 
 bool Screen::handle_input(){
     bool keep_show = true;
+
+    auto pan_step_x = 2.0f * 4.0f / screen_width;   // 4픽셀
+    auto pan_step_y = 2.0f * 2.0f / screen_height;  // 2픽셀 (글자 비율 고려해 더 작게)
+
+    auto apply_pan = [&](int idx, float dx, float dy){
+        if (idx < 0 || idx >= (int)pan_x.size()) return;
+        pan_x[idx] += dx;
+        pan_y[idx] += dy;
+    };
+
     int key = getch();
     switch(key){
         // select protein
@@ -489,46 +505,26 @@ bool Screen::handle_input(){
         // A, a (minus x-axis)
         case 65:
         case 97:
-            if (structNum != -1) {
-                data[structNum]->set_shift(-0.1, 0, 0);
-            } else {
-                for (int i = 0; i < data.size(); i++){
-                    data[i]->set_shift(-0.1, 0, 0);
-                }
-            }
+            if (structNum != -1) apply_pan(structNum, -pan_step_x, 0.0f);
+            else for (int i = 0; i < (int)data.size(); i++) apply_pan(i, -pan_step_x, 0.0f);
             break;
         // D, d (plus x-axis)
         case 68:
         case 100:
-            if (structNum != -1) {
-                data[structNum]->set_shift(0.1, 0, 0);
-            } else {
-                for (int i = 0; i < data.size(); i++){
-                    data[i]->set_shift(0.1, 0, 0);
-                }
-            }
+            if (structNum != -1) apply_pan(structNum, +pan_step_x, 0.0f);
+            else for (int i = 0; i < (int)data.size(); i++) apply_pan(i, +pan_step_x, 0.0f);
             break;
         // S, s (minus y-axis)
         case 83:
         case 115:
-            if (structNum != -1) {
-                data[structNum]->set_shift(0, -0.1, 0);
-            } else {
-                for (int i = 0; i < data.size(); i++){
-                    data[i]->set_shift(0, -0.1, 0);
-                }
-            }
-            break;      
+            if (structNum != -1) apply_pan(structNum, 0.0f, -pan_step_y);
+            else for (int i = 0; i < (int)data.size(); i++) apply_pan(i, 0.0f, -pan_step_y);
+            break;    
         // W, w (plus y-axis)
         case 87:
         case 119:
-            if (structNum != -1) {
-                data[structNum]->set_shift(0, 0.1, 0);
-            } else {
-                for (int i = 0; i < data.size(); i++){
-                    data[i]->set_shift(0, 0.1, 0);
-                }
-            }
+            if (structNum != -1) apply_pan(structNum, 0.0f, +pan_step_y);
+            else for (int i = 0; i < (int)data.size(); i++) apply_pan(i, 0.0f, +pan_step_y);
             break;
 
         // X, x (rotate x-centered)
@@ -568,12 +564,12 @@ bool Screen::handle_input(){
         // F, f (zoom out)
         case 70:
         case 102:
-            set_zoom_level(-0.5);
+            set_zoom_level(0.4);
             break;   
         // R, R (zoom in)
         case 82:
         case 114:
-            set_zoom_level(0.5);
+            set_zoom_level(-0.4);
             break;   
 
         // C, c (camera)

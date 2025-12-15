@@ -38,19 +38,22 @@ public:
                   float min_z, float max_z);
 
 private:
-    float focal_offset = 10.0f;
-    int structNum = -1;
-    float camera_mul = 1.0;
     int screen_width, screen_height;
+    float aspect_ratio;
     bool screen_show_structure;
     bool yesUT = false;
     std::string screen_mode;
     std::string screen_depthcharacter;
-    float aspect_ratio;
-    std::vector<RenderPoint> screenPixels;   
-    std::vector<Protein*> data;  
+    int structNum = -1;
+    
+    float focal_offset = 5.0f;
+    std::vector<float> pan_x;
+    std::vector<float> pan_y;
+
     std::vector<float> zoom_level;
     float ** vectorpointer;
+    std::vector<RenderPoint> screenPixels;   
+    std::vector<Protein*> data;  
 
     BoundingBox global_bb;
     Camera* camera;
