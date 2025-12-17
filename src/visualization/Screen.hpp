@@ -59,8 +59,6 @@ private:
     Camera* camera;
     Panel* panel;
 
-    std::unordered_map<char, int> chain_colors;
-
     void project();
     void project(std::vector<RenderPoint>& screenshotPixels, const int proj_width, const int proj_height);
     void clear_screen();

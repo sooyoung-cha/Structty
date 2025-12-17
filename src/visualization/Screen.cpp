@@ -11,9 +11,12 @@ Screen::Screen(const int& width, const int& height, const bool& show_structure, 
     screen_mode = mode;
     screen_depthcharacter = depthcharacter;
     aspect_ratio = (float)screen_width / screen_height;
+
+    start_color();
+    use_default_colors();
     
     camera = new Camera(get_home_dir() + "/Pictures/StrucTTY_screenshot/", width, height, mode);
-    panel = new Panel(width);
+    panel = new Panel(width, mode);
 }
 
 Screen::~Screen() {
@@ -185,15 +188,11 @@ void Screen::draw_line(std::vector<RenderPoint>& points,
 }
 
 void Screen::assign_colors_to_points(std::vector<RenderPoint>& points, int protein_idx) {
-    initscr();
-    if (!has_colors() || !can_change_color()) {
+    if (!has_colors()) {
         endwin();
         std::cerr << "Terminal does not support colors!" << std::endl;
         return;
     }
-
-    start_color();
-    use_default_colors();
 
     if (screen_mode == "default") {
         for (auto& pt : points) {
@@ -377,57 +376,40 @@ void Screen::draw_screen() {
     clear_screen();
     project();
 
-    std::string panel_str = panel->get_panel_info();
-
     int rows, cols;
     getmaxyx(stdscr, rows, cols);
 
-    int panel_lines = 0;
-    for (char c : panel_str) {
-        if (c == '\n') panel_lines++;
-    }
-    if (!panel_str.empty() && panel_str.back() != '\n') {
-        panel_lines++;
-    }
-    if (panel_lines > rows) panel_lines = rows;
+    int panel_h = panel->get_height();
+    if (panel_h > rows) panel_h = rows;
+
     int margin = 3;
-    int offset = panel_lines + margin;
+    int offset = panel_h + margin;
     if (offset > rows) offset = rows;
 
     clear();
 
     print_screen(offset);
 
-    int start_row = rows - panel_lines;
+    int start_row = rows - panel_h;
     if (start_row < 0) start_row = 0;
 
-    std::stringstream ss(panel_str);
-    std::string line;
-    int cur_row = start_row;
-
-    while (std::getline(ss, line)) {
-        if (cur_row >= rows) break;
-
-        move(cur_row, 0);
+    for (int r = start_row; r < rows; ++r) {
+        move(r, 0);
         clrtoeol();
-
-        if ((int)line.size() > cols) {
-            line = line.substr(0, cols);
-        }
-        printw("%s", line.c_str());
-        ++cur_row;
     }
+
+    panel->draw_panel(start_row, 0, panel_h, cols);
 
     refresh();
 }
 
 
-void Screen::print_screen(int panel_lines) {
+void Screen::print_screen(int y_offset) {
     int rows, cols;
     getmaxyx(stdscr, rows, cols);
 
     for (int i = 0; i < screen_height; ++i) {
-        int row = i - panel_lines;      // ← 여기서 위로 panel_lines만큼 올림
+        int row = i - y_offset;      // ← 여기서 위로 y_offset 만큼 올림
         if (row < 0) continue;          // 음수 row는 그리지 않음
         if (row >= rows) break;         // 터미널 바깥이면 종료
 

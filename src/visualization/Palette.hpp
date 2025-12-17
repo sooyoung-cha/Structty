@@ -6,12 +6,13 @@ struct RGBA { uint8_t r,g,b,a; };
 static_assert(sizeof(RGBA) == 4, "RGBA must be 4 bytes");
 
 namespace Palettes {
-    inline const std::array<int,20> RAINBOW = {
-        196,202,208,214,220,226,190,154,118,82,
-        49,51,45,39,33,27,21,93,129,201
+    inline const std::array<int, 20> RAINBOW = {
+        196, 202, 208, 214, 220, 226, 190, 154, 118, 82,
+        49,  51,  45,  39,  33,  27,  21,  93,  129, 201
     };
-    inline const std::array<int,6> UNRAINBOW = {
-        82, 33, 202, 93, 226, 118
+    inline const std::array<int, 20> UNRAINBOW = {
+        82,  33,  212, 93,  132, 118, 73,  238, 58,  153, 
+        1,   172, 18,  193, 28,  242, 26,  166, 185, 47
     };
     inline constexpr RGBA ID2RGBA[256] = {
         RGBA{0, 0, 0, 255}, // 0
