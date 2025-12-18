@@ -14,7 +14,7 @@ bool is_nonnegative_number(const char* s) {
 }
 
 void print_help(){
-    std::cout<<"-m, --mode:\n\t1.default(green)\n\t2.chain\n\t3.rainbow"<<std::endl;
+    std::cout<<"-m, --mode:\n\t1.default(protein)\n\t2.chain\n\t3.rainbow"<<std::endl;
     std::cout<<"-d, --depth:\n\t1.default(#@%*^-.)\n\t2.7-character user input e.g. -d a134((%"<<std::endl;
     std::cout<<"-c, --chains:\n\tshow only the selected chains"<<std::endl;
     std::cout<<"-w, --width\n\t1.default(3)\n\t2. User input above 0, below 2000"<<std::endl;
@@ -44,7 +44,7 @@ Parameters::Parameters(int argc, char* argv[]) {
                 if (i + 1 < argc) {
                     std::string val(argv[i + 1]);
                     std::transform(val.begin(), val.end(), val.begin(), ::tolower); // to lowercase
-                    if (val == "chain" || val == "rainbow" || val == "default") {
+                    if (val == "chain" || val == "rainbow" || val == "protein") {
                         mode = val;
                         i++;
                     } else {

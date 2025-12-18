@@ -13,9 +13,14 @@
 #include <filesystem> 
 #include <unordered_map>
 
+inline std::string get_home_dir() {
+    if (const char* home = std::getenv("HOME")) return std::string(home);
+    throw std::runtime_error("HOME is not set");
+}
+
 class Camera {
 public:
-    Camera(const std::string dir, const int width, const int height, const std::string mode);
+    Camera(const int width, const int height, const std::string mode);
     ~Camera() = default;
 
     void screenshot(const std::vector<RenderPoint>& screenPixels);    

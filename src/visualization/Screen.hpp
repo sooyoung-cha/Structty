@@ -12,11 +12,6 @@
 #include <ncurses.h>  
 #include <cstdlib>
 
-inline std::string get_home_dir() {
-    if (const char* home = std::getenv("HOME")) return std::string(home);
-    throw std::runtime_error("HOME is not set");
-}
-
 class Screen {
 public:
     Screen(const int& width, const int& height, const bool& show_structure, const std::string& mode, const std::string& depthcharacter);
@@ -29,6 +24,7 @@ public:
     void set_utmatrix(const std::string& utmatrix, bool onlyU);
     void set_zoom_level(float zoom);
     void draw_screen();
+    void init_color_pairs();
     void assign_colors_to_points(std::vector<RenderPoint>& points, int protein_idx);
     void draw_line(std::vector<RenderPoint>& points,
                   int x1, int x2, 
@@ -47,10 +43,10 @@ private:
     int structNum = -1;
     
     float focal_offset = 5.0f;
+    float zoom_level;
     std::vector<float> pan_x;
     std::vector<float> pan_y;
 
-    std::vector<float> zoom_level;
     float ** vectorpointer;
     std::vector<RenderPoint> screenPixels;   
     std::vector<Protein*> data;  

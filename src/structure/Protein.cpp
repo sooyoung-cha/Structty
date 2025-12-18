@@ -122,7 +122,7 @@ void Protein::load_init_atoms(const std::string& in_file,
                               const std::string& target_chains,
                               const std::vector<std::tuple<char, int, char, int, char>>& ss_info, 
                               float * vectorpointers , bool yesUT) {
-    std::cout << "  load atoms\n";
+    // std::cout << "  load atoms\n";
     init_atoms.clear();
 
     gemmi::Structure st = read_structure(in_file);

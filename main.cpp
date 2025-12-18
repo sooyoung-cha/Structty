@@ -13,6 +13,9 @@ int main(int argc, char* argv[]) {
     }
     params.print_args();
 
+    initscr();
+    cbreak();
+    noecho();
     
     Screen screen(params.get_width(), params.get_height(), params.get_show_structure(), params.get_mode(), params.get_depthcharacter()); 
     
@@ -26,9 +29,6 @@ int main(int argc, char* argv[]) {
     }
     screen.normalize_proteins(params.get_utmatrix());
 
-    initscr();
-    cbreak();
-    noecho();
     
     bool run = true;
     while(run) {

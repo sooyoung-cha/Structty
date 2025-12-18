@@ -11,11 +11,13 @@ Screen::Screen(const int& width, const int& height, const bool& show_structure, 
     screen_mode = mode;
     screen_depthcharacter = depthcharacter;
     aspect_ratio = (float)screen_width / screen_height;
+    zoom_level = 2.0f;
 
     start_color();
-    use_default_colors();
+    use_default_colors();    
+    init_color_pairs();
     
-    camera = new Camera(get_home_dir() + "/Pictures/StrucTTY_screenshot/", width, height, mode);
+    camera = new Camera(width, height, mode);
     panel = new Panel(width, mode);
 }
 
@@ -29,11 +31,37 @@ Screen::~Screen() {
     delete panel;
 }
 
+void Screen::init_color_pairs() {
+    if (screen_mode == "protein") {
+        for (int i = 0; i < data.size(); ++i) {
+            init_pair(i+1, Palettes::UNRAINBOW[i], -1);
+        }
+    }
+
+    else if (screen_mode == "chain") {
+        int num_colors = sizeof(Palettes::UNRAINBOW) / sizeof(int);
+
+        for (int i = 0; i < num_colors; ++i) {
+            init_pair(i+1, Palettes::UNRAINBOW[i], -1);
+        }
+    }
+
+    else if (screen_mode == "rainbow") {
+        int num_colors = Palettes::RAINBOW.size();
+
+        for (int i = 0; i < num_colors; ++i) {
+            init_pair(i + 1, Palettes::RAINBOW[i], -1);
+        }
+    }
+}
+
 void Screen::set_protein(const std::string& in_file, const std::string& target_chains, const bool& show_structure) {
     Protein* protein = new Protein(in_file, target_chains, show_structure);
     data.push_back(protein);
     pan_x.push_back(0.0f);
     pan_y.push_back(0.0f);
+    
+    init_color_pairs();
 }
 
 void Screen::set_tmatrix() {
@@ -188,49 +216,37 @@ void Screen::draw_line(std::vector<RenderPoint>& points,
 }
 
 void Screen::assign_colors_to_points(std::vector<RenderPoint>& points, int protein_idx) {
-    if (!has_colors()) {
-        endwin();
-        std::cerr << "Terminal does not support colors!" << std::endl;
-        return;
-    }
+    if (screen_mode == "protein") {
+        int num_colors = sizeof(Palettes::UNRAINBOW) / sizeof(int);
+        int color_idx;
 
-    if (screen_mode == "default") {
         for (auto& pt : points) {
-            init_pair(protein_idx+1, Palettes::UNRAINBOW[protein_idx], -1);
-            pt.color_id = protein_idx + 1;
+            pt.color_id = (protein_idx % num_colors) + 1;
         }
     }
 
     else if (screen_mode == "chain") {
-        char cur_chain = '-';
-        int color_index = 0;
         int num_colors = sizeof(Palettes::UNRAINBOW) / sizeof(int);
+        char cur_chain = points[0].chainID;
+        int color_idx = 0;
 
         for (auto& pt : points) {
             char cID = pt.chainID;
             if (cID != cur_chain) {
-                color_index++;
+                color_idx++;
                 cur_chain = cID;
-                int col = Palettes::UNRAINBOW[(color_index - 1) % num_colors];
-                init_pair(color_index, col, -1);
             }
-            pt.color_id = color_index;
+            pt.color_id = (color_idx % num_colors) + 1;
         }
     }
 
     else if (screen_mode == "rainbow") {
-        int total = points.size();
-
+        int num_points = points.size();
         int num_colors = Palettes::RAINBOW.size();
 
-        for (int i = 0; i < num_colors; ++i) {
-            init_pair(i + 1, Palettes::RAINBOW[i], -1);
-        }
-
-        for (int i = 0; i < total; ++i) {
-            int color_index = (i * num_colors) / total;
-            color_index = std::min(color_index, num_colors - 2);
-            points[i].color_id = color_index + 1;
+        for (int i = 0; i < num_points; i++) {
+            int color_idx = (i * num_colors) / num_points;
+            points[i].color_id = color_idx + 1;
         }
     }
 
@@ -240,10 +256,7 @@ void Screen::assign_colors_to_points(std::vector<RenderPoint>& points, int prote
 }
 
 void Screen::project() {
-    std::vector<float> fovRads;
-    for (size_t i = 0; i < data.size(); i++) {
-        fovRads.push_back(1.0f / tan((FOV * 0.5f) / 180.0f * PI));
-    }
+    float fovRads = 1.0 / tan((FOV / zoom_level) * 0.5 / 180.0 * PI);
 
     std::vector<RenderPoint> finalPoints;
     std::vector<RenderPoint> chainPoints;
@@ -267,8 +280,8 @@ void Screen::project() {
                 float z = position[2] + focal_offset;
                 char structure = chain_atoms[i].get_structure();
 
-                float projectedX = (x / z) * fovRads[ii] + pan_x[ii];
-                float projectedY = (y / z) * fovRads[ii] + pan_y[ii];
+                float projectedX = (x / z) * fovRads + pan_x[ii];
+                float projectedY = (y / z) * fovRads + pan_y[ii];
                 int screenX = (int)((projectedX + 1.0) * 0.5 * screen_width);
                 int screenY = (int)((1.0 - projectedY) * 0.5 * screen_height);
 
@@ -305,10 +318,7 @@ void Screen::project() {
 }
 
 void Screen::project(std::vector<RenderPoint>& projectPixels, const int proj_width, const int proj_height) {
-    std::vector<float> fovRads;
-    for (size_t i = 0; i < data.size(); i++) {
-        fovRads.push_back(1.0f / tan((FOV * 0.5f) / 180.0f * PI));
-    }
+    float fovRads = 1.0 / tan((FOV / zoom_level) * 0.5 / 180.0 * PI);
 
     std::vector<RenderPoint> finalPoints;
     std::vector<RenderPoint> chainPoints;
@@ -332,8 +342,8 @@ void Screen::project(std::vector<RenderPoint>& projectPixels, const int proj_wid
                 float z = position[2] + focal_offset;
                 char structure = chain_atoms[i].get_structure();
 
-                float projectedX = (x / z) * fovRads[ii] + pan_x[ii];
-                float projectedY = (y / z) * fovRads[ii] + pan_y[ii];
+                float projectedX = (x / z) * fovRads + pan_x[ii];
+                float projectedY = (y / z) * fovRads + pan_y[ii];
                 int screenX = (int)((projectedX + 1.0) * 0.5 * proj_width);
                 int screenY = (int)((1.0 - projectedY) * 0.5 * proj_height);
 
@@ -431,28 +441,10 @@ void Screen::print_screen(int y_offset) {
     // refresh()는 draw_screen에서 한 번만 호출
 }
 
-// void Screen::clear_screen() {
-//     clear(); 
-//     screenPixels.assign(screen_width * screen_height, RenderPoint());
-// }
-
 void Screen::set_zoom_level(float zoom){
-    float old = focal_offset;
-    float neu = std::max(0.2f, old + zoom);
-    if (neu == old) return;
-
-    float k = old / neu;
-
-    if (structNum != -1) {
-        pan_x[structNum] *= k;
-        pan_y[structNum] *= k;
-    } else {
-        for (int i = 0; i < (int)data.size(); ++i) {
-            pan_x[i] *= k;
-            pan_y[i] *= k;
-        }
+    if ((zoom_level + zoom > 0.5)&&(zoom_level + zoom < 20)){
+        zoom_level += zoom;
     }
-    focal_offset = neu;
 }
 
 bool Screen::handle_input(){
@@ -546,12 +538,12 @@ bool Screen::handle_input(){
         // F, f (zoom out)
         case 70:
         case 102:
-            set_zoom_level(0.4);
+            set_zoom_level(-0.3);
             break;   
         // R, R (zoom in)
         case 82:
         case 114:
-            set_zoom_level(-0.4);
+            set_zoom_level(0.3);
             break;   
 
         // C, c (camera)

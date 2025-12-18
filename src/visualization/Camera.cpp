@@ -1,11 +1,12 @@
 #include "Camera.hpp"
 
-Camera::Camera(const std::string dir, const int width, const int height, const std::string mode){
-    camera_dir = dir;
+Camera::Camera(const int width, const int height, const std::string mode){
     camera_width = width;
     camera_height = height;
     screenshot_idx = 0;
     camera_mode = mode;
+    
+    camera_dir = get_home_dir() + "/Pictures/StrucTTY_screenshot/";
 
     try {
         std::filesystem::create_directories(camera_dir);

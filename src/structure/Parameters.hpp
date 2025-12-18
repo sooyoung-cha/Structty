@@ -19,7 +19,7 @@ class Parameters{
         vector<string> in_file;
         vector<string> chains;
         string utmatrix = "";
-        string mode = "default";
+        string mode = "protein";
         string depthcharacter = "#@%*^-.";
     public:
         Parameters(int argc, char* argv[]);
