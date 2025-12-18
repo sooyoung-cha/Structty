@@ -392,7 +392,8 @@ void Screen::draw_screen() {
     int panel_h = panel->get_height();
     if (panel_h > rows) panel_h = rows;
 
-    int margin = 3;
+    // int margin = 3;
+    int margin = 0;
     int offset = panel_h + margin;
     if (offset > rows) offset = rows;
 
@@ -419,9 +420,9 @@ void Screen::print_screen(int y_offset) {
     getmaxyx(stdscr, rows, cols);
 
     for (int i = 0; i < screen_height; ++i) {
-        int row = i - y_offset;      // ← 여기서 위로 y_offset 만큼 올림
-        if (row < 0) continue;          // 음수 row는 그리지 않음
-        if (row >= rows) break;         // 터미널 바깥이면 종료
+        int row = i - (y_offset/2)-3;
+        if (row < 0) continue;
+        if (row >= rows) break;
 
         int max_width = std::min(screen_width, cols);
 
@@ -438,7 +439,6 @@ void Screen::print_screen(int y_offset) {
             }
         }
     }
-    // refresh()는 draw_screen에서 한 번만 호출
 }
 
 void Screen::set_zoom_level(float zoom){
@@ -450,8 +450,8 @@ void Screen::set_zoom_level(float zoom){
 bool Screen::handle_input(){
     bool keep_show = true;
 
-    auto pan_step_x = 2.0f * 4.0f / screen_width;   // 4픽셀
-    auto pan_step_y = 2.0f * 2.0f / screen_height;  // 2픽셀 (글자 비율 고려해 더 작게)
+    auto pan_step_x = 2.0f * 4.0f / screen_width;
+    auto pan_step_y = 2.0f * 2.0f / screen_height;
 
     auto apply_pan = [&](int idx, float dx, float dy){
         if (idx < 0 || idx >= (int)pan_x.size()) return;
