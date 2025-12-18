@@ -19,6 +19,7 @@ class Parameters{
         vector<string> in_file;
         vector<string> chains;
         string utmatrix = "";
+        string chainfile = "";
         string mode = "protein";
         string depthcharacter = "#@%*^-.";
     public:
@@ -38,14 +39,17 @@ class Parameters{
             }
             return "";
         }
-        vector<string>& get_chains(){
-            return chains;
-        }
-        string get_chains(int idx){
-            if (idx < chains.size()){
-                return chains[idx];
-            }
-            return "";
+        // vector<string>& get_chains(){
+        //     return chains;
+        // }
+        // string get_chains(int idx){
+        //     if (idx < chains.size()){
+        //         return chains[idx];
+        //     }
+        //     return "";
+        // }
+        string get_chainfile(){
+            return chainfile;
         }
         string get_utmatrix(){
             return utmatrix;

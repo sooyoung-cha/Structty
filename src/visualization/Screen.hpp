@@ -18,10 +18,11 @@ public:
     ~Screen();
     bool handle_input();
     char get_pixel_char_from_depth(float z, float min_z, float max_z);
-    void set_protein(const std::string& in_file, const std::string& target_chains, const bool& show_structure);
+    void set_protein(const std::string& in_file, int ii, const bool& show_structure);
     void normalize_proteins(const std::string& utmatrix);
     void set_tmatrix();
     void set_utmatrix(const std::string& utmatrix, bool onlyU);
+    void set_chainfile(const std::string& chainfile, int filesize);
     void set_zoom_level(float zoom);
     void draw_screen();
     void init_color_pairs();
@@ -46,7 +47,7 @@ private:
     float zoom_level;
     std::vector<float> pan_x;
     std::vector<float> pan_y;
-
+    std::vector<std::string> chainVec; 
     float ** vectorpointer;
     std::vector<RenderPoint> screenPixels;   
     std::vector<Protein*> data;  

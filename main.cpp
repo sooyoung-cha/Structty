@@ -18,9 +18,9 @@ int main(int argc, char* argv[]) {
     noecho();
     
     Screen screen(params.get_width(), params.get_height(), params.get_show_structure(), params.get_mode(), params.get_depthcharacter()); 
-    
+    screen.set_chainfile(params.get_chainfile(), params.get_in_file().size());
     for (int i = 0; i < params.get_in_file().size(); i++){
-        screen.set_protein(params.get_in_file(i), params.get_chains(i), params.get_show_structure());
+        screen.set_protein(params.get_in_file(i), i, params.get_show_structure());
     }
     screen.set_tmatrix();
     

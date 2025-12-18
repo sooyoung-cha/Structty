@@ -16,7 +16,7 @@ bool is_nonnegative_number(const char* s) {
 void print_help(){
     std::cout<<"-m, --mode:\n\t1.default(protein)\n\t2.chain\n\t3.rainbow"<<std::endl;
     std::cout<<"-d, --depth:\n\t1.default(#@%*^-.)\n\t2.7-character user input e.g. -d a134((%"<<std::endl;
-    std::cout<<"-c, --chains:\n\tshow only the selected chains"<<std::endl;
+    std::cout<<"-c, --chains:\n\tshow only the selected chains, see example/chainfile"<<std::endl;
     std::cout<<"-w, --width\n\t1.default(3)\n\t2. User input above 0, below 2000"<<std::endl;
     std::cout<<"-h, --height\n\t1.default(3)\n\t2. User input above 0, below 2000"<<std::endl;
     std::cout<<"-s, --structure:\n\tshow secondary structure(alpha helix, beta sheet)"<<std::endl;
@@ -66,18 +66,23 @@ Parameters::Parameters(int argc, char* argv[]) {
                 }
             }
             else if (!strcmp(argv[i], "-c") || !strcmp(argv[i], "--chains")) {
-                if (i + 1 < argc) {  
-                    if (argv[i+1] == nullptr || strlen(argv[i+1]) == 0) {  // if empty value
-                        throw std::runtime_error("Error: Chains argument is empty.");
-                    }
-                    while(in_file.size() - 1 != chains.size()){
-                        chains.push_back("-");
-                    }
-                    chains.push_back(argv[i+1]);  
-                    i++;
+                if (i + 1 < argc) {
+                    chainfile = argv[++i];
                 } else {
-                    throw std::runtime_error("Error: Missing argument for -c / --chains.");
+                    throw std::runtime_error("Error: Missing value for -c / --chains.");
                 }
+                // if (i + 1 < argc) {  
+                //     if (argv[i+1] == nullptr || strlen(argv[i+1]) == 0) {  // if empty value
+                //         throw std::runtime_error("Error: Chains argument is empty.");
+                //     }
+                //     while(in_file.size() - 1 != chains.size()){
+                //         chains.push_back("-");
+                //     }
+                //     chains.push_back(argv[i+1]);  
+                //     i++;
+                // } else {
+                //     throw std::runtime_error("Error: Missing argument for -c / --chains.");
+                // }
             }
             else if (!strcmp(argv[i], "-w") || !strcmp(argv[i], "--width")) {
                 if (i + 1 < argc) {
@@ -152,7 +157,9 @@ void Parameters::print_args() {
     cout << "  width: " << width << endl;
     cout << "  height: " << height << endl;
     cout << "  utmatrix: " << utmatrix << endl;
+    cout << "  chainfile: " << chainfile << endl;
     cout << "  show_structure: " << show_structure << endl;
+
     cout << "\n";
     return;
 }

@@ -55,8 +55,8 @@ void Screen::init_color_pairs() {
     }
 }
 
-void Screen::set_protein(const std::string& in_file, const std::string& target_chains, const bool& show_structure) {
-    Protein* protein = new Protein(in_file, target_chains, show_structure);
+void Screen::set_protein(const std::string& in_file, int ii, const bool& show_structure) {
+    Protein* protein = new Protein(in_file, chainVec.at(ii), show_structure);
     data.push_back(protein);
     pan_x.push_back(0.0f);
     pan_y.push_back(0.0f);
@@ -74,7 +74,39 @@ void Screen::set_tmatrix() {
         vectorpointer[i][2] = 0;
     }
 }
+void Screen::set_chainfile(const std::string& chainfile, int filesize) {
+    for (size_t i= 0; i < filesize; i++){
+        chainVec.push_back("-");
+    }
+    if(chainfile == "") {
+        return;
+    }
+    std::ifstream file(chainfile);
+    
+    if (!file.is_open()) {
+        std::cerr << "Failed to open chainfile\n";
+        return;
+    }
+    // 0 1 2 3 4 5
+    std::string line;
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
 
+        std::istringstream iss(line);
+        int index;
+        std::string chainlist;
+
+        iss >> index;
+        iss >> chainlist;
+        if (index >= filesize) {
+            std::cout << "Index in utmatrix file should be from 0 to yourfilenum - 1." << std::endl;
+            continue;
+        }
+        // std::istringstream chainlistss(chainlist);
+        chainVec[index]= chainlist;
+    }
+    file.close();
+}
 void Screen::set_utmatrix(const std::string& utmatrix, bool onlyU) {
     yesUT = true;
     size_t filenum = data.size();
