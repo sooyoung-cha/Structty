@@ -442,7 +442,7 @@ void Screen::print_screen(int y_offset) {
 }
 
 void Screen::set_zoom_level(float zoom){
-    if ((zoom_level + zoom > 0.5)&&(zoom_level + zoom < 20)){
+    if ((zoom_level + zoom > 0.5)&&(zoom_level + zoom < 15)){
         zoom_level += zoom;
     }
 }
