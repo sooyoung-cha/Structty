@@ -12,9 +12,9 @@ namespace Palettes {
     };
     inline const std::array<int, 50> UNRAINBOW = {
         // start strong & distinct
-        33,  46,  220,  93, 159,
+        33,  46,  220,  93, 163,
         // alternate warm / cool / green
-        217,  168,  63, 109, 221,
+        215,  168,  63, 109, 221,
         160,  42,  21,  118, 207,
         124,  34,  69, 135, 213,
         // mid-spectrum mixing
