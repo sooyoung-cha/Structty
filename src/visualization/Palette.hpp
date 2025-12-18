@@ -10,9 +10,22 @@ namespace Palettes {
         196, 202, 208, 214, 220, 226, 190, 154, 118, 82,
         49,  51,  45,  39,  33,  27,  21,  93,  129, 201
     };
-    inline const std::array<int, 20> UNRAINBOW = {
-        82,  33,  212, 93,  132, 118, 73,  238, 58,  153, 
-        1,   172, 18,  193, 28,  242, 26,  166, 185, 47
+    inline const std::array<int, 50> UNRAINBOW = {
+        // start strong & distinct
+        33,  46,  220,  93, 159,
+        // alternate warm / cool / green
+        217,  168,  63, 109, 221,
+        160,  42,  21,  118, 207,
+        124,  34,  69, 135, 213,
+        // mid-spectrum mixing
+        208,  76,  75, 141, 219,
+        214,  70,  81, 183, 171,
+        27,   64,  87, 150, 156,
+        // lighter / yellowish accents
+        226,  51, 117, 105, 162,
+        190,  45, 111, 216, 148,
+        // tail accents
+        184,  39,  179, 150, 156
     };
     inline constexpr RGBA ID2RGBA[256] = {
         RGBA{0, 0, 0, 255}, // 0

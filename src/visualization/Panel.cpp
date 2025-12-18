@@ -2,32 +2,32 @@
 
 Panel::Panel(int width, const std::string& mode) : panel_width(width), panel_mode(mode) {}
 
-void Panel::add_panel_info(const std::string& file_name, const std::map<char, int>& chain_info, const std::map<char, int>& chain_residue_info) {
-    panel_atom_info[file_name] = chain_info;
-    panel_residue_info[file_name] = chain_residue_info;
+void Panel::add_panel_info(const std::string& file_name, 
+                           const std::map<char, int>& chain_info, 
+                           const std::map<char, int>& chain_residue_info) {
+    entries.push_back(Entry{
+        file_name,
+        chain_info,
+        chain_residue_info
+    });
 }
 
 int Panel::get_height() const {
     int lines = 0;
     lines += 3; 
-
-    for (const auto& [file_name, chain_info] : panel_atom_info) {
-        lines += 1;
-
-        int n = (int)chain_info.size();
-        int chain_lines = (n == 0) ? 1 : ((n + 2) / 3); 
+    for (const auto& entry : entries) {
+        lines += 1; 
+        int n = (int)entry.chain_atom_info.size();
+        int chain_lines = (n == 0) ? 1 : ((n + 2) / 3); // 3 per line
         lines += chain_lines;
-
-        lines += 1;
+        lines += 1; 
     }
-
-    lines += 1;
+    lines += 1; 
     return lines;
 }
 
 void Panel::draw_panel(int start_row, int start_col,
-                       int max_rows, int max_cols) const
-{
+                       int max_rows, int max_cols) const {
     const int num_colors = (int)(sizeof(Palettes::UNRAINBOW) / sizeof(int));
     if (max_rows <= 0 || max_cols <= 0) return;
 
@@ -37,26 +37,26 @@ void Panel::draw_panel(int start_row, int start_col,
     const int bottom = start_row + max_rows; // exclusive
     const int right  = start_col + max_cols; // exclusive
 
-    auto in_rows = [&](int r){ return r >= top && r < bottom; };
+    auto in_rows = [&](int rr){ return rr >= top && rr < bottom; };
     auto remain_cols = [&](int x){ return right - x; };
 
-    auto clear_line = [&](int r){
-        if (!in_rows(r)) return;
-        move(r, left);
-        clrtoeol(); 
-        move(r, left);
+    auto clear_line = [&](int rr){
+        if (!in_rows(rr)) return;
+        move(rr, left);
+        clrtoeol();
+        move(rr, left);
     };
 
-    auto put_str = [&](int& r, int& x, const std::string& s){
-        if (!in_rows(r)) return;
+    auto put_str = [&](int& rr, int& x, const std::string& s){
+        if (!in_rows(rr)) return;
         int rem = remain_cols(x);
         if (rem <= 0) return;
         addnstr(s.c_str(), rem);
-        x += (int)s.size(); 
+        x += (int)s.size();
     };
 
-    auto put_cstr = [&](int& r, int& x, const char* s){
-        if (!in_rows(r)) return;
+    auto put_cstr = [&](int& rr, int& x, const char* s){
+        if (!in_rows(rr)) return;
         int rem = remain_cols(x);
         if (rem <= 0) return;
         addnstr(s, rem);
@@ -101,8 +101,11 @@ void Panel::draw_panel(int start_row, int start_col,
 
     // Body
     int file_idx = 0;
-    for (const auto& [file_name, chain_info] : panel_atom_info) {
+    for (const auto& entry : entries) {
         if (!in_rows(r)) break;
+
+        const std::string& file_name = entry.file_name;
+        const auto& chain_info       = entry.chain_atom_info;
 
         // protein 모드: 파일 단위 색
         int protein_pair = 0;
@@ -141,13 +144,10 @@ void Panel::draw_panel(int start_row, int start_col,
                 x = left + 1;
             }
 
-            // residue count 안전 접근
+            // residue count (Entry에서 안전 접근)
             int residue_cnt = 0;
-            auto itF = panel_residue_info.find(file_name);
-            if (itF != panel_residue_info.end()) {
-                auto itC = itF->second.find(chainID);
-                if (itC != itF->second.end()) residue_cnt = itC->second;
-            }
+            auto itC = entry.chain_residue_info.find(chainID);
+            if (itC != entry.chain_residue_info.end()) residue_cnt = itC->second;
 
             char buf[64];
             std::snprintf(buf, sizeof(buf), "%c: %d (%d)\t", chainID, residue_cnt, length);
@@ -158,7 +158,7 @@ void Panel::draw_panel(int start_row, int start_col,
                 chain_pair = (count % num_colors) + 1; // 1..num_colors
             }
 
-            // protein 모드면 protein_pair 우선(원하면 chain_pair 우선으로 바꿔도 됨)
+            // protein 모드면 protein_pair 우선
             int pair_to_use = (panel_mode == "protein") ? protein_pair : chain_pair;
 
             if (pair_to_use > 0) attron(COLOR_PAIR(pair_to_use));
@@ -189,4 +189,3 @@ void Panel::draw_panel(int start_row, int start_col,
         if (max_cols >= 2) put_str(r, x, "*");
     }
 }
-
