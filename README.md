@@ -121,4 +121,15 @@ Future releases will include:
 * Foldseek-based pairwise comparison interface
 
 
+## License
+
+This project is licensed under the GNU General Public License v3.0.
+
+This software uses the following third-party libraries:
+- Gemmi (MPL-2.0)
+- LodePNG (zlib)
+
+See `THIRD_PARTY_NOTICES.md` for detailed license information.
+
+
 > Developed by Luna Sung-eun Jang and Soo young Cha and C++
