@@ -1361,23 +1361,6 @@ _pdbx_struct_conn_angle.value_esd
 14 O2B ? C GNP .  ? A GNP 200 ? 1_555 MG ? B MG . ? A MG 201 ? 1_555 O   ? D HOH .  ? A HOH 535 ? 1_555 89.1  ? 
 15 O   ? D HOH .  ? A HOH 534 ? 1_555 MG ? B MG . ? A MG 201 ? 1_555 O   ? D HOH .  ? A HOH 535 ? 1_555 173.1 ? 
 # 
-_struct_sheet.id               A 
-_struct_sheet.type             ? 
-_struct_sheet.number_strands   6 
-_struct_sheet.details          ? 
-# 
-loop_
-_struct_sheet_order.sheet_id 
-_struct_sheet_order.range_id_1 
-_struct_sheet_order.range_id_2 
-_struct_sheet_order.offset 
-_struct_sheet_order.sense 
-A 1 2 ? parallel      
-A 2 3 ? parallel      
-A 3 4 ? parallel      
-A 4 5 ? parallel      
-A 5 6 ? anti-parallel 
-# 
 loop_
 _struct_site.id 
 _struct_site.pdbx_evidence_code 

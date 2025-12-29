@@ -19,7 +19,7 @@ public:
 private:
     float radius = 2.5f;
     int circle_steps = 8; 
-    int width = 2;
+    int width = 4;
 };
 
 
