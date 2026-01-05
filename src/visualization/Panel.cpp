@@ -3,8 +3,8 @@
 Panel::Panel(int width, const std::string& mode) : panel_width(width), panel_mode(mode) {}
 
 void Panel::add_panel_info(const std::string& file_name, 
-                           const std::map<char, int>& chain_info, 
-                           const std::map<char, int>& chain_residue_info) {
+                           const std::map<std::string, int>& chain_info, 
+                           const std::map<std::string, int>& chain_residue_info) {
     entries.push_back(Entry{
         file_name,
         chain_info,
@@ -150,7 +150,7 @@ void Panel::draw_panel(int start_row, int start_col,
             if (itC != entry.chain_residue_info.end()) residue_cnt = itC->second;
 
             char buf[64];
-            std::snprintf(buf, sizeof(buf), "%c: %d (%d)\t", chainID, residue_cnt, length);
+            std::snprintf(buf, sizeof(buf), "%s: %d (%d)\t", chainID.c_str(), residue_cnt, length);
 
             // chain 모드: 체인 단위 색
             int chain_pair = 0;

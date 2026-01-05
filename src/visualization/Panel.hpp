@@ -9,8 +9,8 @@
 
 struct Entry {
     std::string file_name;
-    std::map<char, int> chain_atom_info;
-    std::map<char, int> chain_residue_info;
+    std::map<std::string, int> chain_atom_info;
+    std::map<std::string, int> chain_residue_info;
 };
 
 class Panel {
@@ -18,8 +18,8 @@ public:
     Panel(int width, const std::string& mode);
 
     void add_panel_info(const std::string& file_name,
-                        const std::map<char, int>& chain_info,
-                        const std::map<char, int>& chain_residue_info);
+                        const std::map<std::string, int>& chain_info,
+                        const std::map<std::string, int>& chain_residue_info);
 
     int get_height() const;
 

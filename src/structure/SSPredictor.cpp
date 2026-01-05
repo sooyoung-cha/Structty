@@ -147,7 +147,7 @@ void SSPredictor::run_chain(std::vector<Atom>& chain_atoms) {
     }
 }
 
-void SSPredictor::run(std::map<char, std::vector<Atom>>& atoms) {
+void SSPredictor::run(std::map<std::string, std::vector<Atom>>& atoms) {
     std:: cout << "  predict secondary structure\n";    
     for (auto& chain : atoms) {
         auto& chain_atoms = chain.second;

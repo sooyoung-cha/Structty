@@ -217,7 +217,7 @@ void Screen::draw_line(std::vector<RenderPoint>& points,
                       int x1, int x2, 
                       int y1, int y2,
                       float z1, float z2, 
-                      char chainID, char structure,
+                      std::string chainID, char structure,
                       float min_z, float max_z) {
     int dx = x2 - x1;
     int dy = y2 - y1;
@@ -259,11 +259,11 @@ void Screen::assign_colors_to_points(std::vector<RenderPoint>& points, int prote
 
     else if (screen_mode == "chain") {
         int num_colors = sizeof(Palettes::UNRAINBOW) / sizeof(int);
-        char cur_chain = points[0].chainID;
+        std::string cur_chain = points[0].chainID;
         int color_idx = 0;
 
         for (auto& pt : points) {
-            char cID = pt.chainID;
+            std::string cID = pt.chainID;
             if (cID != cur_chain) {
                 color_idx++;
                 cur_chain = cID;

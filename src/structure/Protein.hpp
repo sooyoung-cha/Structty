@@ -52,10 +52,10 @@ public:
     Protein(const std::string& in_file_, const std::string& target_chains_, const bool& show_structure_);
     ~Protein();
 
-    std::map<char, std::vector<Atom>>& get_atoms();
-    std::map<char, int> get_residue_count();
-    std::map<char, int> get_chain_length();
-    int get_chain_length(char chainID);
+    std::map<std::string, std::vector<Atom>>& get_atoms();
+    std::map<std::string, int> get_residue_count();
+    std::map<std::string, int> get_chain_length();
+    int get_chain_length(std::string chainID);
     int get_length();
     void set_bounding_box();
 
@@ -80,19 +80,19 @@ private:
     bool is_ss_in_file(const std::string& in_file);
     void load_ss_info(const std::string& in_file, 
                       const std::string& target_chains,
-                      std::vector<std::tuple<char, int, char, int, char>>& ss_info);
+                      std::vector<std::tuple<std::string, int, std::string, int, char>>& ss_info);
     void load_init_atoms(const std::string& in_file, 
                              const std::string& target_chains,
-                             const std::vector<std::tuple<char, int, char, int, char>>& ss_info, float * vectorpointers, bool yesUT);
+                             const std::vector<std::tuple<std::string, int, std::string, int, char>>& ss_info, float * vectorpointers, bool yesUT);
     void load_init_atoms(const std::string& in_file, 
                              const std::string& target_chains, float * vectorpointers, bool yesUT);
     
-    void pred_ss_info(std::map<char, std::vector<Atom>>& init_atoms);
+    void pred_ss_info(std::map<std::string, std::vector<Atom>>& init_atoms);
 
-    std::map<char, std::vector<Atom>> init_atoms;
-    std::map<char, std::vector<Atom>> screen_atoms;
+    std::map<std::string, std::vector<Atom>> init_atoms;
+    std::map<std::string, std::vector<Atom>> screen_atoms;
     
-    std::map<char, int> chain_res_count;
+    std::map<std::string, int> chain_res_count;
 
     std::string in_file;
     std::string target_chains;

@@ -7,7 +7,7 @@ static gemmi::Structure read_structure(const std::string& path) {
     return st;
 }
 
-static inline bool chain_ok(const std::string& target, char cid) {
+static inline bool chain_ok(const std::string& target, std::string cid) {
     return (target == "-" || target.find(cid) != std::string::npos);
 }
 
@@ -23,23 +23,23 @@ Protein::Protein(const std::string& in_file_, const std::string& target_chains_,
 Protein::~Protein() {
 }
 
-std::map<char, std::vector<Atom>>& Protein::get_atoms() {
+std::map<std::string, std::vector<Atom>>& Protein::get_atoms() {
     return screen_atoms;  
 }
 
-std::map<char, int> Protein::get_residue_count() {
+std::map<std::string, int> Protein::get_residue_count() {
     return chain_res_count;
 }
 
-std::map<char, int> Protein::get_chain_length() {
-    std::map<char, int> result;
+std::map<std::string, int> Protein::get_chain_length() {
+    std::map<std::string, int> result;
     for (const auto& [chainID, atoms] : init_atoms) {
         result[chainID] = atoms.size();
     }
     return result;
 }
 
-int Protein::get_chain_length(char chainID) {
+int Protein::get_chain_length(std::string chainID) {
     if (screen_atoms.count(chainID)) {
         return screen_atoms[chainID].size();
     }
@@ -109,7 +109,7 @@ void Protein::count_seqres(const std::string& file) {
 
             for (const std::string& cname : ent.subchains) {
                 if (cname.empty()) continue;
-                char cid = cname[0];
+                std::string cid = cname;
                 chain_res_count[cid] = len;
             }
         }
@@ -120,7 +120,7 @@ void Protein::count_seqres(const std::string& file) {
 
 void Protein::load_init_atoms(const std::string& in_file, 
                               const std::string& target_chains,
-                              const std::vector<std::tuple<char, int, char, int, char>>& ss_info, 
+                              const std::vector<std::tuple<std::string, int, std::string, int, char>>& ss_info, 
                               float * vectorpointers , bool yesUT) {
     // std::cout << "  load atoms\n";
     init_atoms.clear();
@@ -129,7 +129,7 @@ void Protein::load_init_atoms(const std::string& in_file,
     gemmi::Model& model = st.first_model();
 
     for (gemmi::Chain& chain : model.chains) {
-        char cid = chain.name.empty() ? '?' : chain.name[0];
+        std::string cid = chain.name.empty() ? "?" : chain.name;
         if (!chain_ok(target_chains, cid))
             continue;
 
@@ -146,7 +146,7 @@ void Protein::load_init_atoms(const std::string& in_file,
             Atom a(x, y, z);
 
             for (auto& t : ss_info) {
-                char sc; int s, ec; int e; char type;
+                std::string sc; int s; std::string ec; int e; char type;
                 std::tie(sc, s, ec, e, type) = t;
 
                 if (cid == sc && resn >= s && resn <= e) {
@@ -154,7 +154,6 @@ void Protein::load_init_atoms(const std::string& in_file,
                     break;
                 }
             }
-
             init_atoms[cid].push_back(a);
         }
     }
@@ -169,7 +168,7 @@ void Protein::load_init_atoms(const std::string& in_file,
     gemmi::Model& model = st.first_model();
 
     for (gemmi::Chain& chain : model.chains) {
-        char cid = chain.name.empty() ? '?' : chain.name[0];
+        std::string cid = chain.name.empty() ? "?" : chain.name;
         if (!chain_ok(target_chains, cid))
             continue;
 
@@ -189,7 +188,7 @@ void Protein::load_init_atoms(const std::string& in_file,
 
 void Protein::load_ss_info(const std::string& in_file,
                                const std::string& target_chains,
-                               std::vector<std::tuple<char,int,char,int,char>>& ss_info)
+                               std::vector<std::tuple<std::string,int,std::string,int,char>>& ss_info)
 {
     // std::cout << "  load SS info\n";
     ss_info.clear();
@@ -205,8 +204,8 @@ void Protein::load_ss_info(const std::string& in_file,
             !end.res_id.seqid.num.has_value())
             continue;
 
-        char bc = beg.chain_name.empty() ? '?' : beg.chain_name[0];
-        char ec = end.chain_name.empty() ? '?' : end.chain_name[0];
+        std::string bc = beg.chain_name.empty() ? std::string("?") : beg.chain_name;
+        std::string ec = end.chain_name.empty() ? std::string("?") : end.chain_name;
         if (!chain_ok(target_chains, bc)) continue;
 
         int bs = (int)beg.res_id.seqid.num;
@@ -225,8 +224,8 @@ void Protein::load_ss_info(const std::string& in_file,
                 !end.res_id.seqid.num.has_value())
                 continue;
 
-            char bc = beg.chain_name.empty() ? '?' : beg.chain_name[0];
-            char ec = end.chain_name.empty() ? '?' : end.chain_name[0];
+            std::string bc = beg.chain_name.empty() ? std::string("?"): beg.chain_name;
+            std::string ec = end.chain_name.empty() ? std::string("?") : end.chain_name;
             if (!chain_ok(target_chains, bc)) continue;
 
             int bs = (int)beg.res_id.seqid.num;
@@ -237,7 +236,7 @@ void Protein::load_ss_info(const std::string& in_file,
     }
 }
 
-std::ostream& operator<<(std::ostream& os, const std::tuple<char, int, char, int, char>& t) {
+std::ostream& operator<<(std::ostream& os, const std::tuple<std::string, int, std::string, int, char>& t) {
     os << "("
        << std::get<0>(t) << ", "
        << std::get<1>(t) << ", "
@@ -252,7 +251,7 @@ void Protein::load_data(float * vectorpointers, bool yesUT) {
     if (in_file.find(".pdb") != std::string::npos || in_file.find(".cif") != std::string::npos) {
         if (show_structure){
             if (is_ss_in_file(in_file)){
-                std::vector<std::tuple<char, int, char, int, char>> ss_info;
+                std::vector<std::tuple<std::string, int, std::string, int, char>> ss_info;
                 load_ss_info(in_file, target_chains, ss_info);
                 load_init_atoms(in_file, target_chains, ss_info, vectorpointers, yesUT);
             }

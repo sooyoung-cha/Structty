@@ -26,7 +26,7 @@ public:
 
     int   smooth_island = 1;
 
-    void run(std::map<char, std::vector<Atom>>& atoms);
+    void run(std::map<std::string, std::vector<Atom>>& atoms);
 
     void run_chain(std::vector<Atom>& chain_atoms);
 
