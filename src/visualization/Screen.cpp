@@ -107,26 +107,29 @@ void Screen::set_chainfile(const std::string& chainfile, int filesize) {
     }
     file.close();
 }
-void Screen::set_utmatrix(const std::string& utmatrix, bool onlyU) {
-    yesUT = true;
-    size_t filenum = data.size();
-    float ** matrixpointer = new float*[filenum];
-    for (int i = 0; i < filenum; i++) {
+
+void Screen::set_utmatrix(const std::string& utmatrix, bool applyUT) {
+    yesUT = !utmatrix.empty();
+
+    const size_t filenum = data.size();
+    float** matrixpointer = new float*[filenum];
+    for (size_t i = 0; i < filenum; i++) {
         matrixpointer[i] = new float[9];
         for (int j = 0; j < 9; j++) {
-            if (j % 4 == 0){
-                matrixpointer[i][j] = 1;
-            } else {
-                matrixpointer[i][j] = 0;
-            }
+            matrixpointer[i][j] = (j % 4 == 0) ? 1.f : 0.f; // identity
         }
-    } 
+    }
+
+    if (utmatrix.empty()) {
+        return;
+    }
+
     std::ifstream file(utmatrix);
-    if (!file.is_open() && onlyU == 0) {
+    if (!file.is_open()) {
         std::cerr << "Failed to open utmatrix file\n";
         return;
     }
-    // 0 1 2 3 4 5
+
     std::string line;
     while (std::getline(file, line)) {
         if (line.empty()) continue;
@@ -136,22 +139,15 @@ void Screen::set_utmatrix(const std::string& utmatrix, bool onlyU) {
         std::string mat9Str;
         std::string mat3Str;
 
-        iss >> index;
-        iss >> mat9Str;
-        iss >> mat3Str;
-
-        if (index >= filenum) {
-            std::cout << "Index in utmatrix file should be from 0 to yourfilenum - 1." << std::endl;
-            continue;
-        }
+        iss >> index >> mat9Str >> mat3Str;
+        if (index < 0 || index >= (int)filenum) continue;
 
         {
             std::istringstream mss(mat9Str);
             std::string val;
             int count = 0;
             while (std::getline(mss, val, ',') && count < 9) {
-                matrixpointer[index][count] = std::stod(val);
-                count++;
+                matrixpointer[index][count++] = std::stof(val);
             }
         }
 
@@ -160,45 +156,77 @@ void Screen::set_utmatrix(const std::string& utmatrix, bool onlyU) {
             std::string val;
             int count = 0;
             while (std::getline(mss, val, ',') && count < 3) {
-                vectorpointer[index][count] = std::stod(val);
-                count++;
+                vectorpointer[index][count++] = std::stof(val);
             }
         }
     }
-    file.close();
-    if(onlyU == 1){
-        for (size_t i=0; i < filenum; i++) {
-            data[i]-> do_naive_rotation(matrixpointer[i]);
-            data[i]-> do_shift(vectorpointer[i]);
+
+    if (applyUT) {
+        for (size_t i = 0; i < filenum; i++) {
+            data[i]->do_naive_rotation(matrixpointer[i]); // U
+            data[i]->do_shift(vectorpointer[i]);          // T
+        }
+    }
+    for (size_t i = 0; i < filenum; i++) delete[] matrixpointer[i];
+    delete[] matrixpointer;
+}
+
+void Screen::normalize_proteins(const std::string& utmatrix) {
+    const bool hasUT = !utmatrix.empty();
+    for (size_t i = 0; i < data.size(); i++) {
+        auto* p = data[i];
+        p->load_data(vectorpointer[i], yesUT);
+        panel->add_panel_info(p->get_file_name(),
+                              p->get_chain_length(),
+                              p->get_residue_count());
+    }
+
+    // 2) ut
+    if (hasUT) {
+        set_utmatrix(utmatrix, true);
+    }
+
+    // 3) bounding box calculation
+    global_bb = BoundingBox();
+    for (auto* p : data) {
+        p->set_bounding_box();
+        global_bb = global_bb + p->get_bounding_box();
+    }
+
+    // 4) scale calculation, every structure in the screen
+    float max_ext = std::max(global_bb.max_x - global_bb.min_x,
+                             global_bb.max_y - global_bb.min_y);
+    max_ext = std::max(max_ext, global_bb.max_z - global_bb.min_z);
+    float scale = (max_ext > 0.f) ? (2.0f / max_ext) : 1.0f;
+    if (hasUT) {
+        // relative position save
+
+        float gx = 0.5f * (global_bb.min_x + global_bb.max_x);
+        float gy = 0.5f * (global_bb.min_y + global_bb.max_y);
+        float gz = 0.5f * (global_bb.min_z + global_bb.max_z);
+
+        float global_shift[3] = { -gx, -gy, -gz };
+
+        for (auto* p : data) {
+            p->set_scale(scale);
+            p->do_shift(global_shift); //same shift for every structure
+            p->do_scale(scale);
+        }
+
+    } else {
+        // If ut not input, go center
+
+        for (auto* p : data) {
+            float center_shift[3] = { -p->cx, -p->cy, -p->cz };
+
+            p->set_scale(scale);
+            p->do_shift(center_shift);
+            p->do_scale(scale);
         }
     }
 }
 
-void Screen::normalize_proteins(const std::string& utmatrix){
-    for (size_t i = 0; i < data.size(); i++) {
-        auto* p = data[i];
-        p->load_data(vectorpointer[i], yesUT);        
-        panel->add_panel_info(p->get_file_name(), p->get_chain_length(), p->get_residue_count());
-    }
-    set_utmatrix(utmatrix, 1);
-    for (auto* p : data) {
-        p->set_bounding_box();
-        BoundingBox bb = p->get_bounding_box();
-        global_bb = global_bb + bb;
-    }
-    float max_ext = std::max(global_bb.max_x - global_bb.min_x, global_bb.max_y - global_bb.min_y);
-    max_ext = std::max(max_ext, global_bb.max_z - global_bb.min_z);
-    float scale = (max_ext > 0.f) ? (2.0f / max_ext) : 1.0f; 
-    for (size_t i = 0; i < data.size(); i++) {
-        auto* p = data[i];
-        p->set_scale(scale);
-        vectorpointer[i][0] = p->cx * (-1);
-        vectorpointer[i][1] = p->cy * (-1);
-        vectorpointer[i][2] = p->cz * (-1);
-        p -> do_shift(vectorpointer[i]);
-        p -> do_scale(p->scale);
-    }
-}
+
 
 char Screen::get_pixel_char_from_depth(float z, float min_z, float max_z) {
     z -= focal_offset;
