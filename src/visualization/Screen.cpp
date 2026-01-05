@@ -268,7 +268,7 @@ void Screen::assign_colors_to_points(std::vector<RenderPoint>& points, int prote
                 color_idx++;
                 cur_chain = cID;
             }
-            pt.color_id = (color_idx % num_colors) + 1;
+            pt.color_id = (protein_idx * 10 + color_idx % num_colors) + 1;
         }
     }
 

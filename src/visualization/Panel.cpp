@@ -155,7 +155,7 @@ void Panel::draw_panel(int start_row, int start_col,
             // chain 모드: 체인 단위 색
             int chain_pair = 0;
             if (panel_mode == "chain" && num_colors > 0) {
-                chain_pair = (count % num_colors) + 1; // 1..num_colors
+                chain_pair = (file_idx * 10 + count % num_colors) + 1; // 1..num_colors
             }
 
             // protein 모드면 protein_pair 우선
