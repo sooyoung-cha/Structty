@@ -14,12 +14,12 @@ bool is_nonnegative_number(const char* s) {
 }
 
 void print_help(){
-    std::cout<<"-m, --mode:\n\t1.default(protein)\n\t2.chain\n\t3.rainbow"<<std::endl;
-    std::cout<<"-d, --depth:\n\t1.default(#@%*^-.)\n\t2.7-character user input e.g. -d a134((%"<<std::endl;
+    std::cout<<"-m, --mode:\n\t1. protein (default)\n\t2. chain\n\t3. rainbow"<<std::endl;
+    std::cout<<"-d, --depth:\n\t1 .#@%*^-. (default)\n\t2. 7-character user input e.g. -d a134((%"<<std::endl;
     std::cout<<"-c, --chains:\n\tshow only the selected chains, see example/chainfile"<<std::endl;
-    std::cout<<"-w, --width\n\t1.default(3)\n\t2. User input above 0, below 2000"<<std::endl;
-    std::cout<<"-h, --height\n\t1.default(3)\n\t2. User input above 0, below 2000"<<std::endl;
-    std::cout<<"-s, --structure:\n\tshow secondary structure(alpha helix, beta sheet)"<<std::endl;
+    std::cout<<"-w, --width\n\t1. 3 (default)\n\t2. User input above 0, below 2000"<<std::endl;
+    std::cout<<"-h, --height\n\t1. 3 (default)\n\t2. User input above 0, below 2000"<<std::endl;
+    std::cout<<"-s, --structure:\n\tshow secondary structure (alpha helix, beta sheet)"<<std::endl;
     std::cout<<"-p, --predict:\n\tshow secondary structure with prediction if it is not described in the input file"<<std::endl;
     std::cout<<"-ut, --utmatrix:\n\trotate and translate, see example/utfile"<<std::endl;
 }
@@ -48,7 +48,7 @@ Parameters::Parameters(int argc, char* argv[]) {
                         mode = val;
                         i++;
                     } else {
-                        throw std::runtime_error("Error: Invalid value for --mode. Use 'chain' or 'rainbow'.");
+                        throw std::runtime_error("Error: Invalid value for --mode. Use 'protein', 'chain' or 'rainbow'.");
                     }
                 } else {
                     throw std::runtime_error("Error: Missing value for -m / --mode.");
